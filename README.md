@@ -9,26 +9,25 @@ This system ingests 1,218 noisy HTML pages from the Autodesk website, builds a h
 
 ## Data & Artifacts
 
-Source code is sent through email (also share in github repository). The HTML corpus, ChromaDB vector index, TruLens evaluation database, and experiment JSON results are stored separately due to size:
+Source code: **https://github.com/molayariasad/autodesk-rag-chatbot**
 
-**[📦 Download data artifacts from Google Drive](#)** *(https://drive.google.com/file/d/1FjhvS7ilE2SaqIrtB2T0TWnvjkw6Rqt7/view?usp=sharing)*
+The HTML corpus is provided separately by Autodesk. After cloning the repo, place the HTML files in `data/raw/` before running ingestion:
 
-After downloading, unzip and place the `data/` folder in the project root:
 ```
-data/raw/                          ← 1,218 HTML files from Autodesk website
-data/chroma_db/                    ← ChromaDB vector index (pre-built, ~500MB)
-data/processed/experiment_results/ ← 10 experiment JSON results
-data/processed/trulens.sqlite      ← TruLens evaluation history
+data/raw/                          ← Place the 1,218 HTML files here before ingesting
+data/chroma_db/                    ← Placeholder in repo — populated automatically by ingestion
+data/processed/experiment_results/ ← 11 experiment JSON results (included in repo)
+data/processed/trulens.sqlite      ← TruLens evaluation history (included in repo)
 ```
 
 ---
 
 ## Quick Start
 
-### Option 1: Docker (Recommended for reviewers)
+### Option 1: Docker (Recommended for Windows/Linux users)
 
 ```bash
-# 1. Download data artifacts from Google Drive and place data/ in project root
+# 1. after uploading the .html data to data/raw/   
 # 2. Launch everything (Ollama + FastAPI + Streamlit)
 docker-compose up --build
 
@@ -37,30 +36,25 @@ open http://localhost:8501        # Streamlit Chat UI
 open http://localhost:8000/docs   # FastAPI Swagger Docs
 ```
 
-First run pulls `gemma3:4b` (~4GB). Subsequent runs start in ~10s using the pre-built index.
+First run pulls `gemma3:4b` (~4GB) and runs ingestion (~60s). Subsequent runs start in ~15s.
 
-### Option 2: Local Development (Apple Silicon recommended)
+### Option 2: Local Development (Recommended for Apple Silicon users)
 
 ```bash
 # Prerequisites: Python 3.12+, Ollama installed (https://ollama.ai)
 
-# 1. Install dependencies
+# 1. Install dependencies (uv sync creates .venv and installs everything automatically)
 pip install uv
-uv pip install -e ".[dev]"
+uv sync
 
-# 2. Pull the LLM (gemma3:4b — optimised for Apple Silicon Metal GPU)
+# 2. Pull the LLM (gemma3:4b — optimised for Apple Silicon Metal GPU and can work on Windows machine too)
 ollama pull gemma3:4b
 # Memory constrained (<4GB free)? Use: ollama pull llama3.2:3b-instruct-q4_K_M
 
 # 3. Configure environment
 cp .env.example .env   # defaults work out of the box for local Ollama
 
-# 4a. Using pre-built index from Google Drive (recommended — skips 1-2mins ingestion)
-#     Place data/ folder from Google Drive in project root. The fast-path
-#     check detects the populated ChromaDB and skips ingestion automatically.
-
-# 4b. Building index from scratch
-cp /path/to/html/files/*.html data/raw/
+# 4. Building index from scratch. make sure you have already done cp /path/to/html/files/*.html data/raw/
 uv run python scripts/ingest.py --data-dir ./data/raw
 
 # Note: You need 3–4 terminal windows running simultaneously:
@@ -81,6 +75,18 @@ uv run streamlit run ui/app.py
 # 8. (Optional) TruLens admin dashboard (new terminal)
 uv run python scripts/run_admin_dashboard.py   # → http://localhost:8502
 ```
+## ⚠️ Platform Performance Notes
+
+| Platform | Recommended method | LLM speed |
+|---|---|---|
+| **Mac Apple Silicon (M1/M2/M3/M4)** | Local dev (`ollama serve` + uvicorn) | 30–60 tok/s (Metal GPU) |
+| **Windows** | Docker (`docker-compose up`) or local dev | 5–15 tok/s (CPU) — slower than Mac |
+| **Linux** | Docker or local dev | Fast (native CPU or GPU) |
+
+> **Note on Windows performance:** `gemma3:4b` is optimised for Apple Silicon Metal GPU and runs significantly faster on Mac. On Windows, inference runs on CPU at 5–15 tok/s — expect couple minutes per response. This is expected behaviour, not a bug. For faster responses on Windows, switch to `llama3.2:3b` via `LLM_MODEL=llama3.2:3b` in `.env`.
+
+---
+
 ## ⚠️ Important: Docker and Local Development are mutually exclusive
 
 Both use port `11434` for Ollama. Running both simultaneously causes a port conflict.
@@ -413,15 +419,15 @@ uv run python scripts/analyze_data.py
 ```
 autodesk-rag-chatbot/
 ├── data/
-│   ├── raw/                         # HTML files (Google Drive)
+│   ├── raw/                         # Place HTML files here (provided by Autodesk)
 │   ├── eval/
 │   │   └── eval_questions.json      # 15-question test suite (in git)
 │   ├── processed/
-│   │   ├── experiment_results/      # trulens_*.json exports (Google Drive)
+│   │   ├── experiment_results/      # 11 experiment JSON results (in git)
 │   │   ├── corpus_analysis/         # EDA PNG plots (in git)
 │   │   ├── metrics_analysis/        # Experiment PNG plots (in git)
-│   │   └── trulens.sqlite           # TruLens DB (Google Drive)
-│   └── chroma_db/                   # Vector index (Google Drive)
+│   │   └── trulens.sqlite           # TruLens evaluation DB (in git)
+│   └── chroma_db/                   # Placeholder — populated by ingestion
 ├── src/
 │   ├── config.py                    # Centralised settings
 │   ├── ingestion/
