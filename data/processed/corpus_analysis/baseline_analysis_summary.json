@@ -1,0 +1,12 @@
+{
+  "total_html_files": 1218,
+  "files_with_content": 983,
+  "files_skipped": 235,
+  "skip_rate": "19.3%",
+  "total_chunks": 5505,
+  "avg_chars_per_doc": "4211",
+  "median_chars_per_doc": "2385",
+  "avg_chunk_length": "949",
+  "chunk_size_setting": 1200,
+  "chunk_overlap_setting": 200
+}

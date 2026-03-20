@@ -1,0 +1,77 @@
+[
+    {
+      "question": "What does Fusion 360 do?",
+      "expected_product": "Fusion 360",
+      "category": "product_info"
+    },
+    {
+      "question": "What's the difference between AutoCAD and Revit?",
+      "expected_product": "AutoCAD",
+      "category": "comparison"
+    },
+    {
+      "question": "Does AutoCAD LT do 3d?",
+      "expected_product": "AutoCAD LT",
+      "category": "feature_query"
+    },
+    {
+      "question": "What's the latest release for Maya?",
+      "expected_product": "Maya",
+      "category": "version_info"
+    },
+    {
+      "question": "Can I use Fusion 360 on a Mac?",
+      "expected_product": "Fusion 360",
+      "category": "compatibility"
+    },
+    {
+      "question": "What is Autodesk Construction Cloud?",
+      "expected_product": "Construction Cloud",
+      "category": "product_info"
+    },
+    {
+      "question": "What new features were added to Autodesk Forma?",
+      "expected_product": "Forma",
+      "category": "feature_query"
+    },
+    {
+      "question": "Tell me about quantum computing applications",
+      "expected_product": "",
+      "category": "irrelevant"
+    },
+    {
+      "question": "What's the difference between f360 and Solidworks?",
+      "expected_product": "Fusion 360",
+      "category": "comparison"
+    },
+    {
+      "question": "What is the minimum RAM requirement for Revit?",
+      "expected_product": "Revit",
+      "category": "product_info"
+    },
+    {
+      "question": "What are the main features of ACAD_E?",
+      "expected_product": "AutoCAD Electrical",
+      "category": "product_info"
+    },
+    {
+      "question": "What is the exact annual price of Fusion 360 in USD?",
+      "expected_product": "Fusion 360",
+      "category": "pricing_adversarial"
+    },
+    {
+      "question": "What version of AutoCAD was released in 2024?",
+      "expected_product": "AutoCAD",
+      "category": "version_adversarial"
+    },
+    {
+      "question": "How does Revit differ from Civil 3D for infrastructure projects?",
+      "expected_product": "Revit",
+      "category": "comparison"
+    },
+    {
+      "question": "What are the newest AI features added to Autodesk products in 2025?",
+      "expected_product": "",
+      "category": "recency_probe"
+    }
+  ]

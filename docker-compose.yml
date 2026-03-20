@@ -1,0 +1,88 @@
+# docker-compose.yml
+version: "3.8"
+
+# ============================================================
+# Autodesk RAG Chatbot — docker-compose.yml
+#
+# Run:    docker-compose up --build
+# Access: Streamlit UI  → http://localhost:8501
+#         FastAPI docs  → http://localhost:8000/docs
+#
+# Startup order is managed via fixed delays (more robust than
+# healthcheck depends_on across Docker versions):
+#   - Ollama starts immediately, pulls gemma3:4b (~3-5 min first run)
+#   - FastAPI waits 30s before starting
+#   - Streamlit waits 60s before starting
+# ============================================================
+
+services:
+
+  # ── Ollama (Local LLM server) ──────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: autodesk-rag-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: >
+      /bin/bash -c "
+        ollama serve &
+        sleep 8 &&
+        ollama pull gemma3:4b &&
+        wait
+      "
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+
+  # ── FastAPI backend ────────────────────────────────────────────────────────
+  fastapi:
+    build: .
+    container_name: autodesk-rag-api
+    command: >
+      /bin/bash -c "
+        echo 'Waiting 30s for Ollama...' &&
+        sleep 30 &&
+        python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+      "
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/raw:/app/data/raw
+      - ./data/chroma_db:/app/data/chroma_db
+      - ./data/processed:/app/data/processed
+    environment:
+      - LLM_BASE_URL=http://ollama:11434
+      - LLM_MODEL=gemma3:4b
+      - RAW_DATA_DIR=/app/data/raw
+      - PROCESSED_DATA_DIR=/app/data/processed
+      - CHROMA_PERSIST_DIR=/app/data/chroma_db
+    depends_on:
+      - ollama
+
+  # ── Streamlit frontend ─────────────────────────────────────────────────────
+  streamlit:
+    build: .
+    container_name: autodesk-rag-ui
+    command: >
+      /bin/bash -c "
+        echo 'Waiting 60s for FastAPI...' &&
+        sleep 60 &&
+        streamlit run ui/app.py
+        --server.port=8501
+        --server.address=0.0.0.0
+        --server.headless=true
+      "
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data/processed:/app/data/processed
+    depends_on:
+      - fastapi
+    environment:
+      - API_BASE_URL=http://fastapi:8000
+
+volumes:
+  ollama_data:
